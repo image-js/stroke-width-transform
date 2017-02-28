@@ -1,9 +1,10 @@
 "use strict";
 
 var Image = require("image-js");
+var Matrix = require("ml-matrix");
 const MAX_BRIGHTNESS = 255;
 
-/*function gaussianFilter(image, width, height, sigma) {
+function gaussianFilter(image, width, height, sigma) {
     var n = 2 * Math.floor(2 * sigma) + 3;
     var mean = Math.floor(n / 2.0);
     var kernel = new Array(n * n); // variable length array
@@ -66,43 +67,60 @@ function convolution(image, kernel, width, height, kn, normalize) {
     }
 
     return out;
-}*/
+}
 
 function canny(image, options) {
     var width = image.width, height = image.height;
 
     options = options | {};
-    var tMin = options.lowThreshold | 35;
-    var tMax = options.highThreshold | 75;
-    var blur = options.blur | 1;
+    var tMin = options.lowThreshold | 0.05;
+    var tMax = options.highThreshold | 1.5;
+    var blur = options.blur | 1.5;
 
-    var Gx = [[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]];
-    var Gy = [[1, 2, 1], [0, 0, 0], [-1, -2, 1]];
+    var Gx = [[-1., 0., 1.], [-2., 0., 2.], [-1., 0., 1.]];
+    var Gy = [[1., 2., 1.], [0., 0., 0.], [-1., -2., 1.]];
 
-    var gf = image.gaussianFilter({
-        sigma: blur,
+    var gfOptions = {
+        sigma: 1.5,
         radius: 3
-    });
+    };
 
-    var gradientX = gf.convolution(Gx);
-    var gradientY = gf.convolution(Gy);
+    var gf = image.gaussianFilter(gfOptions);
+
+    var convOptions = {
+        bitDepth: 32,
+        mode: 'periodic'
+    };
+
+    var gradientX = gf.convolution(Gx, convOptions);
+    var gradientY = gf.convolution(Gy, convOptions);
+    //gradientX.save("gradientX.jpg");
+    //gradientY.save("gradientY.jpg");
+
     var G = new Array(width * height);
-
-    for(var i = 1; i < width - 1; i++) {
-        for(var j = 1; j < height - 1; j++) {
-            c = i + width * j;
-            G[c] = Math.floor(Math.hypot(gradientX.getPixel(c)[0], gradientY.getPixel(c)[0]));
+    for (var i = 0; i < width; i++) {
+        for (var j = 0; j < height; j++) {
+            var c = i + width * j;
+            // G[c] = abs(after_Gx[c]) + abs(after_Gy[c]);
+            G[c] = Math.hypot(gradientY.getPixel(c)[0], gradientX.getPixel(c)[0]);
         }
     }
 
+
     var nms = new Array(width * height);
     var edges = new Array(width * height);
+    var finalImage = new Array(width * height);
     for(i = 0; i < nms.length; ++i) {
         nms[i] = 0;
         edges[i] = 0;
+        finalImage[i] = 0;
     }
 
-    var output = new Image(width, height).grey();
+    var to1D = function (x, y) {
+        return x * width + y;
+    };
+    var set = new Set();
+
     // non-maximum supression
     for (i = 1; i < width - 1; i++) {
         for (j = 1; j < height - 1; j++) {
@@ -116,62 +134,98 @@ function canny(image, options) {
             var sw = ss + 1;
             var se = ss - 1;
 
-            var dir = Math.floor(((Math.atan2(gradientY.getPixel(c)[0], gradientX.getPixel(c)[0]) + Math.PI) % Math.PI) / Math.PI) * 8;
+            var dir = (Math.round(Math.atan2(gradientY.getPixel(c)[0], gradientX.getPixel(c)[0]) * (5.0 / Math.PI)) + 5) % 5;
+            dir %= 4;
 
-            if (((dir <= 1 || dir > 7) && G[c] > G[ee] &&
-                G[c] > G[ww]) || // 0 deg
-                ((dir > 1 && dir <= 3) && G[c] > G[nw] &&
-                G[c] > G[se]) || // 45 deg
-                ((dir > 3 && dir <= 5) && G[c] > G[nn] &&
-                G[c] > G[ss]) || // 90 deg
-                ((dir > 5 && dir <= 7) && G[c] > G[ne] &&
-                G[c] > G[sw]))   // 135 deg
-                nms[c] = G[c];
-            else
-                nms[c] = 0;
+            if(
+                !((dir === 0 && (G[to1D(i, j)] <= G[to1D(i, j - 1)] || G[to1D(i, j) <= G[to1D(i, j + 1)]]))
+                || (dir === 1 && (G[to1D(i, j)] <= G[to1D(i - 1, j + 1)] || G[to1D(i, j) <= G[to1D(i + 1, j - 1)]]))
+                || (dir === 2 && (G[to1D(i, j)] <= G[to1D(i - 1, j)] || G[to1D(i, j) <= G[to1D(i + 1, j)]]))
+                || (dir === 3 && (G[to1D(i, j)] <= G[to1D(i - 1, j - 1)] || G[to1D(i, j) <= G[to1D(i + 1, j + 1)]])))
+            ) {
+                nms[to1D(i, j)] = G[to1D(i, j)]
+            }
         }
     }
 
-    var c = 1;
-    for (j = 1; j < height - 1; j++) {
-        for (i = 1; i < width - 1; i++) {
-            if (nms[c] >= tMax && output.getPixel(c)[0] === 0) { // trace edges
-                output.setPixel(c, [MAX_BRIGHTNESS]);
-                var nedges = 1;
-                edges[0] = c;
 
-                do {
-                    nedges--;
-                    var t = edges[nedges];
 
-                    var nbs = new Array(8); // neighbours
-                    nbs[0] = t - width;     // nn
-                    nbs[1] = t + width;     // ss
-                    nbs[2] = t + 1;      // ww
-                    nbs[3] = t - 1;      // ee
-                    nbs[4] = nbs[0] + 1; // nw
-                    nbs[5] = nbs[0] - 1; // ne
-                    nbs[6] = nbs[1] + 1; // sw
-                    nbs[7] = nbs[1] - 1; // se
-
-                    for(var k = 0; k < 8; k++) {
-                        if (nms[nbs[k]] >= tMin && output.getPixel(nbs[k])[0] === 0) {
-                            output.setPixel(nbs[k], [MAX_BRIGHTNESS]);
-                            edges[nedges] = nbs[k];
-                            nedges++;
-                        }
-                    }
-                } while (nedges > 0);
-            }
-            c++;
+    var counter = 0;
+    for(i = 0; i < nms.length; ++i) {
+        counter += nms[i] !== 0 ? 1 : 0;
+        if(nms[i] > tMax) {
+            edges[i] += 1;
+            finalImage[i] = 1;
         }
+        if(nms[i] > tMin) {
+            edges[i] += 1;
+        }
+    }
+
+    var currentPixels = [];
+    for(i = 1; i < width - 1; ++i) {
+        for(j = 1; j < height - 1; ++j) {
+            if(edges[to1D(i, j)] !== 1) {
+                continue;
+            }
+
+            var end = false;
+            for(var k = i - 1; k < i + 2; ++k) {
+                for(var l = j - 1; l < j + 2; ++l) {
+                    if(edges[to1D(k, l)] === 2) {
+                        currentPixels.push([i, j]);
+                        finalImage[to1D(i, j)] = MAX_BRIGHTNESS;
+                        end = true;
+                        break;
+                    }
+                }
+                if(end) {
+                    break;
+                }
+            }
+        }
+    }
+
+    while(currentPixels.length > 0) {
+        var newPixels = [];
+        for(i = 0; i < currentPixels.length; ++i) {
+            for(j = -1; j < 2; ++j) {
+                for(k = -1; k < 2; ++k) {
+                    if(j === 0 && k === 0) {
+                        continue;
+                    }
+                    var row = currentPixels[i][0] + j;
+                    var col = currentPixels[i][1] + k;
+                    var index = to1D(row, col);
+                    if(edges[index] === 1 && finalImage[index] === 0) {
+                        newPixels.push([row, col]);
+                        finalImage[index] = MAX_BRIGHTNESS;
+                    }
+                }
+            }
+        }
+        currentPixels = newPixels;
+    }
+
+    var output = new Image(width, height).grey();
+    for(i = 0; i < finalImage.length; ++i) {
+        output.setPixel(i, [finalImage[i]]);
     }
 
     return output;
 }
 
-Image.load("./img/billboard.jpg").then(function(image) {
+Image.load("./img/text b on w.jpg").then(function(image) {
     var grey = image.grey();
+
+/*    var testImage = new Image(4, 4).grey();
+    testImage.setMatrix(new Matrix([[1, 2, 0, 0],
+        [5, 3, 0, 4],
+        [0, 0, 0, 7],
+        [9, 3, 0, 0]]));*/
+
     grey = canny(grey);
     grey.save("test.jpg");
+}).catch(function (result) {
+    console.log(result);
 });
