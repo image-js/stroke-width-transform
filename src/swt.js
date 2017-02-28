@@ -121,7 +121,7 @@ function canny(image, options) {
     }
 
     var to1D = function (x, y) {
-        return x * width + y;
+        return x * height + y;
     };
 
     // non-maximum supression
@@ -157,7 +157,7 @@ function canny(image, options) {
         counter += nms[i] !== 0 ? 1 : 0;
         if (nms[i] > tMax) {
             edges[i] += 1;
-            finalImage[i] = 1;
+            finalImage[i] = MAX_BRIGHTNESS;
         }
         if (nms[i] > tMin) {
             edges[i] += 1;
@@ -209,7 +209,7 @@ function canny(image, options) {
         currentPixels = newPixels;
     }
 
-    var output = new Image(width, height).grey();
+    var output = image.clone();
     for (i = 0; i < finalImage.length; ++i) {
         output.setPixel(i, [finalImage[i]]);
     }
