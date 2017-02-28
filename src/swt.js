@@ -69,27 +69,35 @@ function convolution(image, kernel, width, height, kn, normalize) {
     return out;
 }*/
 
-function nmsHist(width, height, gradientY, gradientX, G, tMax, tMin) {
-
-}
 
 function canny(image, options) {
     var width = image.width, height = image.height;
 
     options = options | {};
-    var tMin = options.lowThreshold | 40;
-    var tMax = options.highThreshold | 120;
+    var tMin = options.lowThreshold | 75;
+    var tMax = options.highThreshold | 225;
     var blur = options.blur | 1.5;
 
-    var Gx = [[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]];
-    var Gy = [[1, 2, 1], [0, 0, 0], [-1, -2, -1]];
+
+    var Gx= [
+        [-1, 0, +1],
+        [-2, 0, +2],
+        [-1, 0, +1]
+    ];
+
+    var Gy = [
+        [-1, -2, -1],
+        [0,  0,  0],
+        [+1, +2, +1]
+    ];
+    //var Gx = [[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]];
+    //var Gy = [[1, 2, 1], [0, 0, 0], [-1, -2, -1]];
 
     var gfOptions = {
-        sigma: 1,
-        radius: 2
+        sigma: 1.0
     };
 
-    var gf = image.gaussianFilter(gfOptions);
+    var gf = image.clone(); //image.gaussianFilter(gfOptions);
 
     var convOptions = {
         bitDepth: 32,
@@ -105,7 +113,7 @@ function canny(image, options) {
     for (var i = 0; i < width; i++) {
         for (var j = 0; j < height; j++) {
             var c = i + width * j;
-            // G[c] = abs(after_Gx[c]) + abs(after_Gy[c]);
+            // G[c] = Math.abs(gradientY.getPixel(c)[0]) + Math.abs(gradientX.getPixel(c)[0]);
             G[c] = Math.hypot(gradientY.getPixel(c)[0], gradientX.getPixel(c)[0]);
         }
     }
