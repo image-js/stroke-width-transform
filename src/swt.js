@@ -4,7 +4,7 @@ var Image = require("image-js");
 var Matrix = require("ml-matrix");
 const MAX_BRIGHTNESS = 255;
 
-function gaussianFilter(image, width, height, sigma) {
+/*function gaussianFilter(image, width, height, sigma) {
     var n = 2 * Math.floor(2 * sigma) + 3;
     var mean = Math.floor(n / 2.0);
     var kernel = new Array(n * n); // variable length array
@@ -67,22 +67,26 @@ function convolution(image, kernel, width, height, kn, normalize) {
     }
 
     return out;
+}*/
+
+function nmsHist(width, height, gradientY, gradientX, G, tMax, tMin) {
+
 }
 
 function canny(image, options) {
     var width = image.width, height = image.height;
 
     options = options | {};
-    var tMin = options.lowThreshold | 0.05;
-    var tMax = options.highThreshold | 1.5;
+    var tMin = options.lowThreshold | 40;
+    var tMax = options.highThreshold | 120;
     var blur = options.blur | 1.5;
 
-    var Gx = [[-1., 0., 1.], [-2., 0., 2.], [-1., 0., 1.]];
-    var Gy = [[1., 2., 1.], [0., 0., 0.], [-1., -2., 1.]];
+    var Gx = [[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]];
+    var Gy = [[1, 2, 1], [0, 0, 0], [-1, -2, -1]];
 
     var gfOptions = {
-        sigma: 1.5,
-        radius: 3
+        sigma: 1,
+        radius: 2
     };
 
     var gf = image.gaussianFilter(gfOptions);
@@ -110,7 +114,7 @@ function canny(image, options) {
     var nms = new Array(width * height);
     var edges = new Array(width * height);
     var finalImage = new Array(width * height);
-    for(i = 0; i < nms.length; ++i) {
+    for (i = 0; i < nms.length; ++i) {
         nms[i] = 0;
         edges[i] = 0;
         finalImage[i] = 0;
@@ -119,7 +123,6 @@ function canny(image, options) {
     var to1D = function (x, y) {
         return x * width + y;
     };
-    var set = new Set();
 
     // non-maximum supression
     for (i = 1; i < width - 1; i++) {
@@ -137,7 +140,7 @@ function canny(image, options) {
             var dir = (Math.round(Math.atan2(gradientY.getPixel(c)[0], gradientX.getPixel(c)[0]) * (5.0 / Math.PI)) + 5) % 5;
             dir %= 4;
 
-            if(
+            if (
                 !((dir === 0 && (G[to1D(i, j)] <= G[to1D(i, j - 1)] || G[to1D(i, j) <= G[to1D(i, j + 1)]]))
                 || (dir === 1 && (G[to1D(i, j)] <= G[to1D(i - 1, j + 1)] || G[to1D(i, j) <= G[to1D(i + 1, j - 1)]]))
                 || (dir === 2 && (G[to1D(i, j)] <= G[to1D(i - 1, j)] || G[to1D(i, j) <= G[to1D(i + 1, j)]]))
@@ -149,55 +152,54 @@ function canny(image, options) {
     }
 
 
-
     var counter = 0;
-    for(i = 0; i < nms.length; ++i) {
+    for (i = 0; i < nms.length; ++i) {
         counter += nms[i] !== 0 ? 1 : 0;
-        if(nms[i] > tMax) {
+        if (nms[i] > tMax) {
             edges[i] += 1;
             finalImage[i] = 1;
         }
-        if(nms[i] > tMin) {
+        if (nms[i] > tMin) {
             edges[i] += 1;
         }
     }
 
     var currentPixels = [];
-    for(i = 1; i < width - 1; ++i) {
-        for(j = 1; j < height - 1; ++j) {
-            if(edges[to1D(i, j)] !== 1) {
+    for (i = 1; i < width - 1; ++i) {
+        for (j = 1; j < height - 1; ++j) {
+            if (edges[to1D(i, j)] !== 1) {
                 continue;
             }
 
             var end = false;
-            for(var k = i - 1; k < i + 2; ++k) {
-                for(var l = j - 1; l < j + 2; ++l) {
-                    if(edges[to1D(k, l)] === 2) {
+            for (var k = i - 1; k < i + 2; ++k) {
+                for (var l = j - 1; l < j + 2; ++l) {
+                    if (edges[to1D(k, l)] === 2) {
                         currentPixels.push([i, j]);
                         finalImage[to1D(i, j)] = MAX_BRIGHTNESS;
                         end = true;
                         break;
                     }
                 }
-                if(end) {
+                if (end) {
                     break;
                 }
             }
         }
     }
 
-    while(currentPixels.length > 0) {
+    while (currentPixels.length > 0) {
         var newPixels = [];
-        for(i = 0; i < currentPixels.length; ++i) {
-            for(j = -1; j < 2; ++j) {
-                for(k = -1; k < 2; ++k) {
-                    if(j === 0 && k === 0) {
+        for (i = 0; i < currentPixels.length; ++i) {
+            for (j = -1; j < 2; ++j) {
+                for (k = -1; k < 2; ++k) {
+                    if (j === 0 && k === 0) {
                         continue;
                     }
                     var row = currentPixels[i][0] + j;
                     var col = currentPixels[i][1] + k;
                     var index = to1D(row, col);
-                    if(edges[index] === 1 && finalImage[index] === 0) {
+                    if (edges[index] === 1 && finalImage[index] === 0) {
                         newPixels.push([row, col]);
                         finalImage[index] = MAX_BRIGHTNESS;
                     }
@@ -208,15 +210,17 @@ function canny(image, options) {
     }
 
     var output = new Image(width, height).grey();
-    for(i = 0; i < finalImage.length; ++i) {
+    for (i = 0; i < finalImage.length; ++i) {
         output.setPixel(i, [finalImage[i]]);
     }
 
     return output;
 }
 
-Image.load("./img/text b on w.jpg").then(function(image) {
-    var grey = image.grey();
+Image.load("./img/billboard.jpg").then(function(image) {
+    var grey = image.grey({
+        algorithm: 'luma601'
+    });
 
 /*    var testImage = new Image(4, 4).grey();
     testImage.setMatrix(new Matrix([[1, 2, 0, 0],
