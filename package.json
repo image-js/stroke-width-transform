@@ -1,0 +1,44 @@
+{
+  "name": "stroke-width-transform",
+  "version": "0.0.0",
+  "description": "Stroke width transform",
+  "main": "lib/index.js",
+  "module": "src/index.js",
+  "files": [
+    "lib",
+    "src"
+  ],
+  "scripts": {
+    "eslint": "eslint src",
+    "eslint-fix": "npm run eslint -- --fix",
+    "prepublishOnly": "rollup -c",
+    "test": "run-s testonly eslint",
+    "testonly": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/image-js/stroke-width-transform.git"
+  },
+  "keywords": [],
+  "author": "Jefferson Javier Hernández Panqueba",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/image-js/stroke-width-transform/issues"
+  },
+  "homepage": "https://github.com/image-js/stroke-width-transform#readme",
+  "jest": {
+    "testEnvironment": "node"
+  },
+  "devDependencies": {
+    "babel-plugin-transform-es2015-modules-commonjs": "^6.26.0",
+    "eslint": "^4.16.0",
+    "eslint-config-cheminfo": "^1.14.1",
+    "eslint-plugin-jest": "^21.7.0",
+    "jest": "^22.1.4",
+    "npm-run-all": "^4.1.2",
+    "rollup": "^0.55.1"
+  },
+  "dependencies": {
+    "image-js": "^0.16.1"
+  }
+}
