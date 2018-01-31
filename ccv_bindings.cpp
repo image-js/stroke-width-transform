@@ -111,9 +111,9 @@ int ccv_write_html(ccv_dense_matrix_t* matrix, const val& imageDataOrElement) {
   return 0;
 }
 
-int ccv_read_html(const val& imageDataOrCanvasImageSource, ccv_dense_matrix_t** mat, int type) {
+int ccv_read_html(const val& imageData, ccv_dense_matrix_t** mat, int type) {
   // Get ImageData if it is a CanvasImageSource
-  val imageData = val::module_property("readImageData")(imageDataOrCanvasImageSource);
+  // val imageData = val::module_property("readImageData")(imageDataOrCanvasImageSource);
 
   // Copy the rgba raw data into emscripten heap as the content of a string
   std::string s = imageData["data"]["buffer"].as<std::string>(); // TODO: Remove `["buffer"]` after https://github.com/kripken/emscripten/pull/4511

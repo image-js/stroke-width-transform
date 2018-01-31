@@ -1,7 +1,10 @@
-var CCV = require('..');
+import strokeWidthTransform from '..';
+import {Image} from 'image-js';
 
-describe('test myModule', () => {
-    it('should return 42', () => {
-        expect(0).toBe(0);
-    });
+describe('test Stroke Width Transform', () => {
+  test('main test', async () => {
+      await Image.load('sample/sample-passport.jpg').then(function (image) {
+        expect(strokeWidthTransform(image, {})).toBe(true);
+      });
+  });
 });
