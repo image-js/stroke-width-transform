@@ -1,0 +1,4 @@
+[submodule "ccv"]
+	path = ccv
+	url = https://github.com/liuliu/ccv.git
+    ignore = dirty

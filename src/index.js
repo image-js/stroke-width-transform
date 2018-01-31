@@ -1,7 +1,3 @@
-/**
- * Returns a very important number
- * @return {number}
- */
-export default function myModule() {
-    return 42;
-}
+const CCV = require('../dist/ccv');
+
+module.exports = CCV({});

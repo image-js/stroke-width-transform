@@ -27,7 +27,13 @@
   },
   "homepage": "https://github.com/image-js/stroke-width-transform#readme",
   "jest": {
-    "testEnvironment": "node"
+    "testEnvironment": "node",
+    "transformIgnorePatterns": [
+      "dist/ccv_wasm.wasm",
+      "dist/ccv_wasm.js",
+      "dist/ccv.js",
+      "dist/ccv_without_filesystem.js"
+    ]
   },
   "devDependencies": {
     "babel-plugin-transform-es2015-modules-commonjs": "^6.26.0",
