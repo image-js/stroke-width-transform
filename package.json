@@ -45,6 +45,7 @@
     "rollup": "^0.55.1"
   },
   "dependencies": {
-    "image-js": "^0.16.1"
+    "image-js": "^0.16.1",
+    "ml-matrix": "^5.0.1"
   }
 }
