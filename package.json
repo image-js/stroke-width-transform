@@ -31,8 +31,7 @@
     "transformIgnorePatterns": [
       "dist/ccv_wasm.wasm",
       "dist/ccv_wasm.js",
-      "dist/ccv.js",
-      "dist/ccv_without_filesystem.js"
+      "dist/ccv.js"
     ]
   },
   "devDependencies": {
