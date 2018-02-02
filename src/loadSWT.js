@@ -23,7 +23,7 @@ const defaultOptions = {
   elongateRatio: 1.9,
   letterThresh: 3,
   breakdown: 1,
-  breakdownRatio: 1 
+  breakdownRatio: 1
 };
 
 export default function loadSWT(CCVLib) {
