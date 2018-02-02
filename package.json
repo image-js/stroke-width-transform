@@ -27,7 +27,12 @@
   },
   "homepage": "https://github.com/image-js/stroke-width-transform#readme",
   "jest": {
-    "testEnvironment": "node"
+    "testEnvironment": "node",
+    "transformIgnorePatterns": [
+      "dist/ccv_wasm.wasm",
+      "dist/ccv_wasm.js",
+      "dist/ccv.js"
+    ]
   },
   "devDependencies": {
     "babel-plugin-transform-es2015-modules-commonjs": "^6.26.0",
@@ -36,9 +41,10 @@
     "eslint-plugin-jest": "^21.7.0",
     "jest": "^22.1.4",
     "npm-run-all": "^4.1.2",
-    "rollup": "^0.55.1"
+    "rollup": "^0.55.1",
+    "image-js": "^0.16.1"
   },
   "dependencies": {
-    "image-js": "^0.16.1"
+    "ml-matrix": "^5.0.1"
   }
 }

@@ -1,7 +1,3 @@
-/**
- * Returns a very important number
- * @return {number}
- */
-export default function myModule() {
-    return 42;
-}
+import loadSWT from './loadSWT';
+const CCVLib = require('../dist/ccv');
+export default loadSWT(CCVLib({}));

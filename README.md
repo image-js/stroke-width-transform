@@ -13,10 +13,38 @@ Stroke width transform.
 ## Usage
 
 ```js
-import library from 'stroke-width-transform';
+import strokeWidthTransform from 'stroke-width-transform';
+import Image from 'image-js';
 
-const result = library(args);
-// result is ...
+const swtOptions = {
+  interval: 1,
+  minNeighbors: 1,
+  scaleInvariant: true,
+  direction: 0,
+  sameWordThresh: [0.1, 0.8],
+  size: 3,
+  lowThresh: 124,
+  highThresh: 204,
+  maxHeight: 300,
+  minHeight: 8,
+  minArea: 38,
+  letterOccludeThresh: 3,
+  aspectRatio: 8,
+  stdRatio: 0.83,
+  thicknessRatio: 1.5,
+  heightRatio: 1.7,
+  intensityThresh: 31,
+  distanceRatio: 2.9,
+  intersectRatio: 1.3,
+  elongateRatio: 1.9,
+  letterThresh: 3,
+  breakdown: 1,
+  breakdownRatio: 1 
+};
+
+Image.load('myImage.png').then((image) => {
+  var rois = strokeWidthTransform(image, swtOptions); // rois contains the regions with text
+})
 ```
 
 ## [API Documentation](https://image-js.github.io/stroke-width-transform/)
