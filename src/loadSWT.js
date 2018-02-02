@@ -1,12 +1,11 @@
-import Image from 'image-js';
 import Matrix from 'ml-matrix';
 
-const defaultOptions = { 
+const defaultOptions = {
   interval: 1,
   minNeighbors: 1,
   scaleInvariant: true,
   direction: 0,
-  sameWordThresh: [ 0.1, 0.8 ],
+  sameWordThresh: [0.1, 0.8],
   size: 3,
   lowThresh: 124,
   highThresh: 204,
@@ -24,13 +23,14 @@ const defaultOptions = {
   elongateRatio: 1.9,
   letterThresh: 3,
   breakdown: 1,
-  breakdownRatio: 1 }
+  breakdownRatio: 1 };
 
 export default function loadSWT(CCVLib) {
   /**
+   * @function
    * Get the bounding boxes over the text from the image using stroke width transform (SWT)
-   * @param {Image} image 
-   * @param {object} options 
+   * @param {Image} image
+   * @param {object} options
    * @param {boolean} [options.scaleInvariant=true] - Enable scale invariant SWT (to scale to different sizes and then combine the results)
    * @param {number} [options.interval=1] - Intervals for the scale invariant option
    * @param {number} [options.minNeighbors=1] - Minimal neighbors to make a detection valid, this is for scale-invariant version.
@@ -52,57 +52,57 @@ export default function loadSWT(CCVLib) {
    * @param {number} [options.letterThresh=3] - The allowable letter threshold.
    * @param {boolean} [options.breakdown=true] - If breakdown text line into words.
    * @param {number} [options.breakdownRatio=1] - Apply OTSU method and if inter-class variance above the threshold, it will be break down into words.
-   * 
+   *
    * @return {Array<Roi>} - Array of regions that contains text.
    */
   function strokeWidthTransform(image, options) {
     options = Object.assign({}, defaultOptions, options);
-  
+
     var imageData = {
       width: image.width,
       height: image.height,
       data: image.getRGBAData()
     };
-  
+
     const denseMatrix = new CCVLib.ccv_dense_matrix_t();
     CCVLib.ccv_read(imageData, denseMatrix);
     const rects = CCVLib.ccv_swt_detect_words(denseMatrix, options);
-  
+
     var output = rects.toJS();
-  
+
     denseMatrix.delete();
     rects.delete();
-  
+
     return getRois(image, output);
   }
-  
+
   function getRois(image, rects) {
     const manager = image.getRoiManager();
     var map = Matrix.zeros(image.height, image.width);
-    for(var i = 0; i < rects.length; ++i) {
+    for (var i = 0; i < rects.length; ++i) {
       var {
         x,
         y,
         width,
         height
       } = rects[i];
-  
+
       var id = i + 1;
       fill(map, x, y, width, height, id);
     }
-  
+
     manager.putMap(map.to1DArray());
     return manager.getRois({
       positive: true,
       negative: false
     });
-  
+
   }
-  
+
   function fill(array, x, y, width, height, toFill) {
-    for(var i = x; i <= x + width; ++i) {
-      for(var j = y; j <= y + height; ++j) {
-        if(array[j][i] !== 0) {
+    for (var i = x; i <= x + width; ++i) {
+      for (var j = y; j <= y + height; ++j) {
+        if (array[j][i] !== 0) {
           continue;
         }
         array[j][i] = toFill;
