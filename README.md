@@ -4,7 +4,7 @@
   [![build status][travis-image]][travis-url]
   [![npm download][download-image]][download-url]
 
-Stroke width transform.
+Stroke Width Transform for detecting text on images using [CCV library](https://github.com/liuliu/ccv) and it's [Javascript bindings](https://github.com/fta2012/ccv-js).
 
 ## Installation
 
@@ -46,6 +46,10 @@ Image.load('myImage.png').then((image) => {
   var rois = strokeWidthTransform(image, swtOptions); // rois contains the regions with text
 })
 ```
+
+Sample input             |  Image with ROI's
+:-------------------------:|:-------------------------:
+![](./example/sample.jpg)  |  ![](./example/sample-output.jpg)
 
 ## [API Documentation](https://image-js.github.io/stroke-width-transform/)
 
