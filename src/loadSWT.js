@@ -23,11 +23,12 @@ const defaultOptions = {
   elongateRatio: 1.9,
   letterThresh: 3,
   breakdown: 1,
-  breakdownRatio: 1 };
+  breakdownRatio: 1 
+};
 
 export default function loadSWT(CCVLib) {
+
   /**
-   * @function
    * Get the bounding boxes over the text from the image using stroke width transform (SWT)
    * @param {Image} image
    * @param {object} options
