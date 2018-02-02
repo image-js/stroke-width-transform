@@ -45,6 +45,7 @@ dist/ccv.js: ccv_bindings.cpp ccv/lib/libccv.a src/ccvPreAsm.js
 ccv/lib/libccv.a:
 	git submodule update --init
 	cd ccv/lib && git checkout stable && emconfigure ./configure --without-cuda && emmake make libccv.a
+	mkdir -p dist
 
 clean:
 	rm -f dist/*
