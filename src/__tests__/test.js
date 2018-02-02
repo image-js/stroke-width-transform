@@ -1,5 +1,5 @@
-import strokeWidthTransform from '..';
 import {Image} from 'image-js';
+import {default as strokeWidthTransform} from '..';
 
 describe('test Stroke Width Transform', () => {
   test('main test', async () => {
@@ -24,11 +24,6 @@ function drawRois(image, rois) {
     // draw bounding boxes
     var mask = roi.getMask();
     var mbr = mask.minimalBoundingRectangle();
-    roi.mbr = mbr;
-    roi.mbrWidth = getDistance(mbr[0], mbr[1]);
-    roi.mbrHeight = getDistance(mbr[1], mbr[2]);
-    roi.mbrSurface = roi.mbrWidth * roi.mbrHeight;
-    roi.fillingFactor = roi.surface / roi.mbrSurface;
     
     mbr = mbr.map(point =>
         [
