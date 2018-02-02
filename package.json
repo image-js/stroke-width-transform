@@ -1,6 +1,6 @@
 {
   "name": "stroke-width-transform",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "description": "Stroke width transform",
   "main": "lib/index.js",
   "module": "src/index.js",
