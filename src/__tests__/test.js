@@ -6,7 +6,7 @@ describe('test Stroke Width Transform', () => {
       var images = [Image.load('example/sample.jpg'), Image.load('example/sample-output.jpg')]
       await Promise.all(images).then(function (images) {
         var rois = strokeWidthTransform(images[0], {
-          scale_invariant: 1,
+          scaleInvariant: true,
         });
         var paintedImage = drawRois(images[0], rois);
 
@@ -35,8 +35,4 @@ function drawRois(image, rois) {
   });
 
   return image;
-}
-
-function getDistance(p1, p2) {
-  return Math.sqrt((p1[0] - p2[0]) ** 2 + (p1[1] - p2[1]) ** 2);
 }
