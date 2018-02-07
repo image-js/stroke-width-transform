@@ -51,6 +51,13 @@ Sample input             |  Image with ROI's
 :-------------------------:|:-------------------------:
 ![](./example/sample.jpg)  |  ![](./example/sample-output.jpg)
 
+## Install it from source
+
+* Download the repo and it's submodules `git clone --recursive https://github.com/image-js/stroke-width-transform.git`.
+* Install [emscripten](https://kripken.github.io/emscripten-site/docs/getting_started/downloads.html).
+* Run `emmake make` over the root repo to compile the SWT.
+* Run `npm run test` to check if the compilation works.
+
 ## [API Documentation](https://image-js.github.io/stroke-width-transform/)
 
 ## License
