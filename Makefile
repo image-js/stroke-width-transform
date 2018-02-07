@@ -1,4 +1,4 @@
-ifneq ($(notdir $(CXX)), em++)
+ifeq "" "$(findstring em++,$(CXX))"
 $(error You need to install/source emscripten and run with "emmake make")
 endif
 
