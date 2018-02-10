@@ -12,9 +12,9 @@ sudo: required
 services:
   - docker
 
-# before_install:
-#  - docker run -dit --name emscripten -v $(pwd):/src trzeci/emscripten:sdk-tag-1.37.31-64bit bash
+before_install:
+  - docker run -dit --name emscripten -v $(pwd):/src trzeci/emscripten:sdk-incoming-64bit bash
 
 script:
-  - docker run --rm -v $(pwd):/src -u emscripten trzeci/emscripten emmake make
+  - docker exec -it emscripten emmake make
   - npm run test
