@@ -1,5 +1,3 @@
-import Matrix from 'ml-matrix';
-
 const defaultOptions = {
   interval: 1,
   minNeighbors: 1,
@@ -79,7 +77,7 @@ export default function loadSWT(CCVLib) {
 
   function getRois(image, rects) {
     const manager = image.getRoiManager();
-    var map = Matrix.zeros(image.height, image.width);
+    var map = new Array(image.height * image.width).fill(0);//Matrix.zeros(image.height, image.width);
     for (var i = 0; i < rects.length; ++i) {
       var {
         x,
@@ -89,10 +87,10 @@ export default function loadSWT(CCVLib) {
       } = rects[i];
 
       var id = i + 1;
-      fill(map, x, y, width, height, id);
+      fill(map, x, y, width, height, image.width, image.height, id);
     }
 
-    manager.putMap(map.to1DArray());
+    manager.putMap(map);
     return manager.getRois({
       positive: true,
       negative: false
@@ -100,13 +98,15 @@ export default function loadSWT(CCVLib) {
 
   }
 
-  function fill(array, x, y, width, height, toFill) {
-    for (var i = x; i <= x + width; ++i) {
-      for (var j = y; j <= y + height; ++j) {
-        if (array[j][i] !== 0) {
+  function fill(array, x, y, ROIWidth, ROIHeight, imageWidth, imageHeight, toFill) {
+    var maxHeight = Math.min(y + ROIHeight, imageHeight);
+    var maxWidth = Math.min(imageWidth, x + ROIWidth);
+    for (var i = x; i <= maxWidth; ++i) {
+      for (var j = y; j <= maxHeight; ++j) {
+        if (array[j * imageWidth + i] !== 0) {
           continue;
         }
-        array[j][i] = toFill;
+        array[j * imageWidth + i] = toFill;
       }
     }
   }
